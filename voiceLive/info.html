@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+	      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>详情页</title>
+	<link rel="stylesheet" href="css/normalize.css">
+	<link rel="stylesheet" href="font/iconfont.css">
+	<link rel="stylesheet" href="css/info.css">
+</head>
+<body>
+	<header>
+		<img src="img/01.jpeg">
+		<div class="container">
+			<h2>一个户型引发的7种思路-彭博分享专场</h2>
+			<p style="color: #333;margin-bottom: 10px">时间</p>
+			<div style="overflow: hidden">
+				<span class="time">2017-01-03 19:40:00</span><span class="eye"><i class="anticon icon-eyeo"></i>2238次</span>
+			</div>
+		</div>
+		<div class="share">
+			<span style="float: left">分享达人榜</span>
+			<div class="sharer">
+				<img src="img/face.jpg"><img src="img/face.jpg"><img src="img/face.jpg"><img src="img/face.jpg">>
+			</div>
+		</div>
+	</header>
+	<main>
+		<h3>直播简介</h3>
+		<div class="intro">
+			<h4>主讲人:冯志强</h4>
+			<p>
+				前腾讯高级项目经历；Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid beatae distinctio error exercitationem explicabo facere iste libero nostrum, possimus, quae quidem, quo suscipit ut! Ipsum quae quaerat quo rem tempore.
+			</p>
+			<h4>直播简介：</h4>
+			<p class="introduction">
+					Lorem ipsum dolor sit amet, consectetur adipisicing elit. Blanditiis consectetur corporis deleniti enim, expedita ipsam iusto quaerat ullam unde veritatis. Cum, laudantium libero maxime natus saepe sequi sit. Ducimus, natus.
+			</p>
+			<a class="toggle" data-state="0" onclick="toggle(this)">
+				<span class="toggle_text">展开查看详细介绍</span><span class="down">︾</span>
+			</a>
+		</div>
+		<div class="count">
+			<span style="float: left;color: #333">报名人数 <span style="color: #909499">1179</span></span>
+			<div class="human">
+				<img src="img/face.jpg"><img src="img/face.jpg"><img src="img/face.jpg"><img src="img/face.jpg">>
+			</div>
+		</div>
+	</main>
+	<footer>
+		<p class="foot_title">直播间 <span style="color: #679CD2">设计思享汇</span> <a class="attention">关注</a></p>
+		<div class="foot_bottom">
+			<div class="topics">
+				<p>25</p>话题数
+			</div>
+			<div class="num">
+				<p>7628</p>关注人数
+			</div>
+			<div class="official">
+				<img src="img/official.jpg">官方认证
+			</div>
+		</div>
+		<div style="text-align: center;color: #BBB;background: #f0f0f0;padding: 15px 0 20px;font-size: 13px">
+			<span style="color: #369">jz100</span>提供技术支持
+		</div>
+		<a class="sbt">报名进入</a>
+	</footer>
+	<script>
+		var intrd=document.getElementsByClassName('introduction')[0],
+			h=window.getComputedStyle(intrd).height;
+			intrd.style.height='3.45em';
+		window.onload=function(){
+			document.getElementsByTagName('html')[0].style.opacity=1;
+		}
+		function toggle(me){
+			var down=document.getElementsByClassName('down')[0];
+				text=document.getElementsByClassName('toggle_text')[0];
+			if(me.getAttribute('data-state')-0) {
+				intrd.style.height='3.45em';
+				down.className='down';
+				text.innerHTML='展开查看详细介绍';
+				me.setAttribute('data-state',0);
+			}else{
+				intrd.style.height=h;
+				down.className='down up';
+				me.setAttribute('data-state',1);
+				text.innerHTML='收起';
+			}
+		}
+	</script>
+</body>
+</html>

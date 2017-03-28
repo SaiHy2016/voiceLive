@@ -1,0 +1,307 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	<meta name="viewport"
+	      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta name="format-detection" content="telephone=no" />
+	<meta content="email=no" name="format-detection" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<link rel="stylesheet" href="css/normalize.css">
+	<link rel="stylesheet" href="font/iconfont.css">
+	<link rel="stylesheet" href="css/anchor.css">
+	<title>直播间</title>
+	<script src="js/vue.min.js"></script>
+</head>
+<body>
+<main id="anchor" v-cloak v-if="showMain">
+	<div v-if="isIos">
+		<div class="main" :style="{height:wHeight}">
+			<div id="top"></div>
+			<div class="seeMore anticon icon-clockcircleo" v-show="openHistoryBtn" @click="openHistoryMsg"> 查看更多消息</div>
+			<transition>
+				<div class="livingTime" v-if="showLivingTime">
+					<div class="container">
+						<p class="c_header">本次直播将于{{livingTime}}开始</p>
+						<ul>
+							<li><span>{{countdown.days}}</span>天</li>
+							<li><span>{{countdown.hours}}</span>时</li>
+							<li><span>{{countdown.minutes}}</span>分</li>
+							<li><span>{{countdown.seconds}}</span>秒</li>
+						</ul>
+					</div>
+				</div>
+			</transition>
+			<ul class="main_lists">
+				<li class="pre_dialog" v-for="(item,i) in items" v-if="i>=showItemsNum">
+					<div v-if="item.sender!=null">
+						<p class="reward_msg">
+							<span class="anticon icon-paycircle"></span><span class="reward_name">{{item.sender}}</span>给<span class="reward_name">{{item.reciever}}</span>打赏了<span class="reward_name">{{item.amount}}滴</span>泉水
+						</p>
+					</div>
+					<div v-else>
+						<p class="pre_time">{{item.ctime}}</p>
+						<div>
+							<img class="pre_face" :src="item.avatarURL">
+							<div class="pre_reward" :username="item.user_name" :uid="item.uid" @click="giveReward">赏</div>
+							<div class="pre_right">
+								<h4 class="user_name">{{item.user_name}}<span class="pre_role">{{item.user_role}}</span></h4>
+								<my-content :item="item"></my-content>
+							</div>
+						</div>
+					</div>
+				</li>
+			</ul>
+			<div id="bottom"></div>
+		</div>
+		<right-top></right-top>
+		<right-bottom></right-bottom>
+		<anchor-send v-if="user_type!==3"></anchor-send>
+		<listener-send v-else></listener-send>
+		<transition name="fade">
+			<div class="fullImg" v-show="isFullImg" @click="closeFullImg" :style="{backgroundPosition:backgroundPosition,backgroundImage:backgroundImage}" @touchmove.prevent>
+			</div>
+		</transition>
+		<transition name="fade">
+			<div class="chat-room" v-show="openChatRoom">
+				<div class="back_living">
+					<button @click="back">回到直播</button>
+				</div>
+				<div  class="room_bottom">
+					<div class="room_insert">
+						<p class="room_title"><span class="anticon icon-message" style="font-size: 1em;margin-right: 5px"></span>讨论（<span>{{total_num}}</span>）</p>
+						<ul class="lists">
+							<li class="list" v-for="list in chatRoomLists">
+								<img class="room_head" :src="list.avatarURL">
+								<div class="room-right">
+									<span>{{list.user_name}}</span>
+									<p>{{list.ctime}}</p>
+									<div class="room_content">
+										<span class="ask" v-show="list.msg_type==4">问</span>{{list.content}}</div>
+								</div>
+							</li>
+						</ul>
+						<p class="lists_bottom">没有更多</p>
+					</div>
+				</div>
+			</div>
+		</transition>
+		<transition name="fade">
+			<div class="payWater" v-show="toPayWater" @touchmove.prevent>
+				<i class="anticon icon-close" @click="closePay"></i>
+				<div v-if="!hasResult">
+					<p>向 <span class="rewardName">{{rewardName}}</span> 打赏泉水数</p>
+					<div class="pay_main">
+						<span :class="{checked:this.reward==100}" @click="chooseWater">100滴</span>
+						<span :class="{checked:this.reward==50}" @click="chooseWater">50滴</span>
+						<span :class="{checked:this.reward==20}" @click="chooseWater">20滴</span>
+						<span :class="{checked:this.reward==10}" @click="chooseWater" >10滴</span>
+						<span :class="{checked:this.reward==5}" @click="chooseWater">5滴</span>
+						<span @click="chooseWater" :class="{checked:this.reward==2}">2滴</span>
+						<input type="number" v-model.number="reward" placeholder="请输入其他数量" step="1">
+					</div>
+					<p class="payNotice">确认打赏后泉水将自动转入对方账户</p>
+					<span :class="{'sbm':true,'disable':disabled}"  @click="payWater">确认打赏</span>
+				</div>
+				<div v-else>
+					<p v-if="rewardRes.status" class="rewardSuc">
+						恭喜您，打赏成功！
+					</p>
+					<p v-else class="rewarderr">
+						{{rewardRes.msg}}
+					</p>
+				</div>
+			</div>
+		</transition>
+	</div>
+	<div v-else>
+			<div id="top"></div>
+			<div class="seeMore anticon icon-clockcircleo" v-show="openHistoryBtn" @click="openHistoryMsg"> 查看更多消息</div>
+			<transition name="fade">
+				<div class="livingTime" v-if="showLivingTime">
+					<div class="container">
+						<p class="c_header">本次直播将于{{livingTime}}开始</p>
+						<ul>
+							<li><span>{{countdown.days}}</span>天</li>
+							<li><span>{{countdown.hours}}</span>时</li>
+							<li><span>{{countdown.minutes}}</span>分</li>
+							<li><span>{{countdown.seconds}}</span>秒</li>
+						</ul>
+					</div>
+				</div>
+			</transition>
+			<ul class="main_lists">
+				<li class="pre_dialog" v-for="(item,i) in items" v-if="i>=showItemsNum">
+					<div v-if="item.sender!=null">
+						<p class="reward_msg">
+							<span class="anticon icon-paycircle"></span><span class="reward_name">{{item.sender}}</span>给<span class="reward_name">{{item.reciever}}</span>打赏了<span class="reward_name">{{item.amount}}滴</span>泉水
+						</p>
+					</div>
+					<div v-else>
+						<p class="pre_time">{{item.ctime}}</p>
+						<div>
+							<img class="pre_face" :src="item.avatarURL">
+							<div class="pre_reward" :username="item.user_name" :uid="item.uid" @click="giveReward">赏</div>
+							<div class="pre_right">
+								<h4 class="user_name">{{item.user_name}}<span class="pre_role">{{item.user_role}}</span></h4>
+								<my-content :item="item"></my-content>
+							</div>
+						</div>
+					</div>
+				</li>
+			</ul>
+			<div id="bottom" style="height: 40px"></div>
+		<right-top></right-top>
+		<right-bottom class="isAndroid"></right-bottom>
+		<anchor-send v-if="user_type!==3" style="position: fixed;bottom: 0"></anchor-send>
+		<listener-send v-else style="position: fixed;bottom: 0"></listener-send>
+		<transition name="fade">
+			<div class="fullImg" v-show="isFullImg" @click="closeFullImg" :style="{backgroundPosition:backgroundPosition,backgroundImage:backgroundImage}" @touchmove.prevent>
+			</div>
+		</transition>
+		<transition name="fade">
+			<div class="chat-room" v-show="openChatRoom" style="position: fixed">
+				<div class="back_living">
+					<button @click="back">回到直播</button>
+				</div>
+				<div  class="room_bottom">
+					<div class="room_insert">
+						<p class="room_title"><span class="anticon icon-message" style="font-size: 1em;margin-right: 5px"></span>讨论（<span>{{total_num}}</span>）</p>
+						<ul class="lists">
+							<li class="list" v-for="list in chatRoomLists">
+								<img class="room_head" :src="list.avatarURL">
+								<div class="room-right">
+									<span>{{list.user_name}}</span>
+									<p>{{list.ctime}}</p>
+									<div class="room_content">
+										<span class="ask" v-show="list.msg_type==4">问</span>{{list.content}}</div>
+								</div>
+							</li>
+						</ul>
+						<p class="lists_bottom">没有更多</p>
+					</div>
+				</div>
+			</div>
+		</transition>
+		<transition name="fade">
+			<div class="payWater" v-show="toPayWater" @touchmove.prevent>
+				<i class="anticon icon-close" @click="closePay"></i>
+				<div v-if="!hasResult">
+					<p>向 <span class="rewardName">{{rewardName}}</span> 打赏泉水数</p>
+					<div class="pay_main">
+						<span :class="{checked:this.reward==100}" @click="chooseWater">100滴</span>
+						<span :class="{checked:this.reward==50}" @click="chooseWater">50滴</span>
+						<span :class="{checked:this.reward==20}" @click="chooseWater">20滴</span>
+						<span :class="{checked:this.reward==10}" @click="chooseWater" >10滴</span>
+						<span :class="{checked:this.reward==5}" @click="chooseWater">5滴</span>
+						<span @click="chooseWater" :class="{checked:this.reward==2}">2滴</span>
+						<input type="number" v-model.number="reward" placeholder="请输入其他数量" step="1">
+					</div>
+					<p class="payNotice">确认打赏后泉水将自动转入对方账户</p>
+					<span :class="{'sbm':true,'disable':disabled}"  @click="payWater">确认打赏</span>
+				</div>
+				<div v-else>
+					<p v-if="rewardRes.status" class="rewardSuc">
+						恭喜您，打赏成功！
+					</p>
+					<p v-else class="rewarderr">
+						{{rewardRes.msg}}
+					</p>
+				</div>
+			</div>
+		</transition>
+	</div>
+</main>
+<script type="text/x-template" id="my-content-template">
+	<div class="pre_content">
+		<div class="audio_c" v-if="msg_type==1">
+			<audio :src="audio_src" preload="auto" @error="errAudio">您的手机版本太低，暂不支持语音播放</audio>
+			<div class="audio_box" :style="{width:vLength}" @click="playMe">
+				<img :src="imgSrc" :id="id">
+			</div>
+			<span class="second">{{audio_dur}}"</span><span class="anticon icon-exclamationcircle" v-if="isErr"></span>
+		</div>
+		<div v-if="msg_type==2" class="img_box">
+			<img :src="audio_src" @click="fullScreen">
+		</div>
+		<div v-if="msg_type==3" class="pre_c_box">
+			<pre>{{msg_content}}</pre>
+		</div>
+	</div>
+</script>
+<script type="text/x-template" id="right-top-template">
+	<div class="slider">
+		<div class="slider-top" @click="toggleLR">
+				<span :class="{anticon:true,'icon-doubleleft':isIconLeft,'icon-doubleright':!isIconLeft}"></span>
+				<span class="anticon icon-team"></span>
+			    <span :class="{rt_animate:isMove}" style="transition: margin-right 1s">{{views_num[0]}}人次</span>
+			<a @click.prevent="openCR" class="chat-room-a">聊天室</a>
+		</div>
+		<transition name="slide-fade">
+			<ul id="comments" v-show="openLiveRoom" @click="openCR">
+				<li v-for="list in liveRoomlists">
+					<img class="com-face" :src="list.avatarURL">
+					<p><span class="ask" v-show="list.msg_type==4">问</span>{{list.content}}</p>
+				</li>
+			</ul>
+		</transition>
+	</div>
+</script>
+<script type="text/x-template" id="right-bottom-template">
+	<div>
+		<div class="slider-bottom">
+			<div class="handle" @click="handle">操作</div>
+			<div class="up" @click="toTop"><span class="anticon icon-up"></span></div>
+			<div class="down" @click='toBottom'><span class="anticon icon-down"></span></div>
+		</div>
+		<!--<div class="panel" v-show="showPanel" @click="closePanel">-->
+			<!--<div class="panel_bottom">-->
+				<!--<span class="anticon icon-sharealt share" @click="shareRoom"> 分享</span>-->
+			<!--</div>-->
+		<!--</div>-->
+	</div>
+</script>
+<script type="text/x-template" id="anchor-send-template">
+	<div class="anchor-send">
+		<input id="anchorImg" accept="image/*" @change="postImg" type="file" style="display: none">
+		<ul>
+			<li @click="record">
+				<img src="img/speak.png">语音
+			</li>
+			<li @click="openWrite">
+				<span class="anticon icon-edit"></span>文字
+			</li>
+			<li @click="chooseImg">
+				<span class="anticon icon-picture"></span>图片
+			</li>
+		</ul>
+		<div class="write" v-show="isWrite">
+			<textarea id="getfocus" placeholder="请输入您想说的的内容" autofocus='true' v-model="writeMsg">
+			</textarea>
+			<span class="cancel" @click="closeWrite">取消</span>
+			<span class="post" @click="postMsg">发送</span>
+		</div>
+	</div>
+</script>
+<script type="text/x-template" id="listener-send-template">
+	<div class="listener-send">
+		<div class="input_ask">
+			<input class="input_text" type="text" v-model="ask_content" placeholder="输入讨论内容或者提问" @keyup.enter="postMsg">
+			<label class="input_checkbox"><input type="checkbox" v-model="checked">提问</label>
+		</div>
+		<span class="submit" @click="postMsg">发送</span>
+	</div>
+</script>
+<script>
+	/*if (!navigator.userAgent.match(/jz100-APP-ios/i) && !navigator.userAgent.match(/jz100app/i)){
+			location.href='http://www.jz100.com/appdown/index.html'
+	}*/
+</script>
+<script src="js/socket.io.js"></script>
+<script src="js/anchor.js"></script>
+</body>
+</html>
